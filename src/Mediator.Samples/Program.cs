@@ -20,9 +20,9 @@ var serviceProvider = services.BuildServiceProvider();
 await MediatorSample.Call(serviceProvider);
 await Mediator.Samples.MediatorDecoratorPattern.Call(serviceProvider);
 
-public class UserRepository
+public class UserRepository(ILogger<UserRepository> logger)
 {
     public void Save()
-        => Console.WriteLine("Saving...");
+        => logger.LogInformation("Saving...");
 }
 

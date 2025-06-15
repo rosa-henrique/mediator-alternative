@@ -2,6 +2,7 @@ using System.Reflection;
 using Mediator.Abstractions;
 using Mediator.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Mediator.Samples;
 
@@ -32,28 +33,31 @@ public class CreateUserRequest : IRequest<string>
     public string Password { get; init; } = string.Empty;
 }
 
-public class CreateUserRequestHandlerRequestHandler(UserRepository accountRepository, IMediator mediator) : IRequestHandler<CreateUserRequest, string>
+public class CreateUserRequestHandlerRequestHandler(
+    UserRepository accountRepository,
+    IMediator mediator,
+    ILogger<CreateUserRequestHandlerRequestHandler> logger) : IRequestHandler<CreateUserRequest, string>
 {
     public async Task<string> HandleAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"Creating user {request.Username}...");
+        logger.LogInformation($"Creating user {request.Username}...");
         accountRepository.Save();
 
         var notification = new UserCreatedEvent(request.Username);
         await mediator.PublishAsync(notification);
-        
+
         return $"{request.Username} created";
     }
 }
 
 public record UserCreatedEvent(string Username) : INotification;
 
-public class UserCreatedEventRequest : INotificationHandler<UserCreatedEvent>
+public class UserCreatedEventRequest(ILogger<UserCreatedEventRequest> logger) : INotificationHandler<UserCreatedEvent>
 {
     public Task HandleAsync(UserCreatedEvent request, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"notification user {request.Username}...");
-            
+        logger.LogInformation($"notification user {request.Username}...");
+
         return Task.CompletedTask;
     }
 }

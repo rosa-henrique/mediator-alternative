@@ -3,6 +3,7 @@ using ErrorOr;
 using MediatorDecoratorPattern.Abstractions;
 using MediatorDecoratorPattern.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Mediator.Samples;
 
@@ -32,11 +33,11 @@ public sealed class CreateUserCommand : ICommand<string>
     public string Password { get; init; } = string.Empty;
 }
 
-public class CreateUserCommandHandler(UserRepository userRepository) : ICommandHandler<CreateUserCommand, string>
+public class CreateUserCommandHandler(UserRepository userRepository, ILogger<CreateUserCommandHandler> logger) : ICommandHandler<CreateUserCommand, string>
 {
     public Task<ErrorOr<string>> Handle(CreateUserCommand command, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Creating user {command.Username}...");
+        logger.LogInformation($"Creating user {command.Username}...");
         userRepository.Save();
         
         return Task.FromResult<ErrorOr<string>>($"{command.Username} created");
