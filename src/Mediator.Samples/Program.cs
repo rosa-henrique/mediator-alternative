@@ -1,57 +1,28 @@
-﻿using Mediator.Abstractions;
-using Mediator.Extensions;
+﻿using Mediator.Samples;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 var services = new ServiceCollection();
 
-services.AddTransient<IMediator, Mediator.Mediator>();
-services.AddTransient<UserRepository>();
-services.AddMediator(typeof(Program).Assembly);
+services.AddLogging(config =>
+{
+    config.AddConsole();
+    config.SetMinimumLevel(LogLevel.Information);
+});
 
+services.AddTransient<UserRepository>();
+
+MediatorSample.Init(services);
+Mediator.Samples.MediatorDecoratorPattern.Init(services);
 
 var serviceProvider = services.BuildServiceProvider();
-var mediator = serviceProvider.GetRequiredService<IMediator>();
 
-var request = new CreateUserRequest { Username = "teste", Password = "12345566" };
-var result = await mediator.SendAsync(request);
-
-Console.WriteLine(result);
+await MediatorSample.Call(serviceProvider);
+await Mediator.Samples.MediatorDecoratorPattern.Call(serviceProvider);
 
 public class UserRepository
 {
     public void Save()
         => Console.WriteLine("Saving...");
-}
-
-public class CreateUserRequest : IRequest<string>
-{
-    public string Username { get; init; } = string.Empty;
-    public string Password { get; init; } = string.Empty;
-}
-
-public class CreateUserRequestHandlerRequestHandler(UserRepository accountRepository, IMediator mediator) : IRequestHandler<CreateUserRequest, string>
-{
-    public async Task<string> HandleAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
-    {
-        Console.WriteLine($"Creating user {request.Username}...");
-        accountRepository.Save();
-
-        var notification = new UserCreatedEvent(request.Username);
-        await mediator.PublishAsync(notification);
-        
-        return $"{request.Username} created";
-    }
-}
-
-public record UserCreatedEvent(string Username) : INotification;
-
-public class UserCreatedEventRequest : INotificationHandler<UserCreatedEvent>
-{
-    public Task HandleAsync(UserCreatedEvent request, CancellationToken cancellationToken = default)
-    {
-        Console.WriteLine($"notification user {request.Username}...");
-            
-        return Task.CompletedTask;
-    }
 }
 
