@@ -29,7 +29,7 @@ public class CreateUserRequest : IRequest<string>
     public string Password { get; init; } = string.Empty;
 }
 
-public class CreateUserHandlerRequestHandlerRequest(UserRepository accountRepository, IMediator mediator) : IHandlerRequest<CreateUserRequest, string>
+public class CreateUserRequestHandlerRequestHandler(UserRepository accountRepository, IMediator mediator) : IRequestHandler<CreateUserRequest, string>
 {
     public async Task<string> HandleAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -45,7 +45,7 @@ public class CreateUserHandlerRequestHandlerRequest(UserRepository accountReposi
 
 public record UserCreatedEvent(string Username) : INotification;
 
-public class UserCreatedEventRequest : IHandlerNotification<UserCreatedEvent>
+public class UserCreatedEventRequest : INotificationHandler<UserCreatedEvent>
 {
     public Task HandleAsync(UserCreatedEvent request, CancellationToken cancellationToken = default)
     {

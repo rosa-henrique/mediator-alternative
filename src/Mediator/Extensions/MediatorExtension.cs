@@ -10,8 +10,8 @@ public static class MediatorExtension
     {
         services.AddTransient<IMediator, Mediator>();
         
-        var requestsHandlerInterfaceType = typeof(IHandlerRequest<,>);
-        var notificationHandlerInterfaceType = typeof(IHandlerNotification<>);
+        var requestsHandlerInterfaceType = typeof(IRequestHandler<,>);
+        var notificationHandlerInterfaceType = typeof(INotificationHandler<>);
 
         foreach (var assembly in assemblies)
         {
