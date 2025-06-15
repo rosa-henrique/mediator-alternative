@@ -3,7 +3,7 @@ using Mediator.Abstractions;
 
 namespace Mediator;
 
-public class Mediator(IServiceProvider serviceProvider) : IMediator
+public class Mediator(IServiceProvider serviceProvider) : IMediator 
 {
     private static readonly ConcurrentDictionary<Type, Func<object, object, CancellationToken, Task<object>>>
         _requestsHandlerCache = new();
@@ -11,9 +11,10 @@ public class Mediator(IServiceProvider serviceProvider) : IMediator
     private static readonly ConcurrentDictionary<Type, Func<object, object, CancellationToken, Task<object>>>
         _notificationsHandlerCache = new();
 
-    public async Task<TResponse> PublishAsync<TResponse>(IRequest<TResponse> request,
-        CancellationToken cancellationToken = default)
+    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var requestType = request.GetType();
         var handlerType = typeof(IHandlerRequest<,>).MakeGenericType(requestType, typeof(TResponse));
 
@@ -42,12 +43,12 @@ public class Mediator(IServiceProvider serviceProvider) : IMediator
         return (TResponse)result;
     }
 
-    public async Task SendAsync(INotification notification, CancellationToken cancellationToken = default)
+    public async Task PublishAsync(INotification notification, CancellationToken cancellationToken = default)
     {
         var notificationType = notification.GetType();
         var handlerType = typeof(IHandlerNotification<>).MakeGenericType(notificationType);
 
-        var invoker = _requestsHandlerCache.GetOrAdd(notificationType, static reqType =>
+        var invoker = _notificationsHandlerCache.GetOrAdd(notificationType, static reqType =>
         {
             var genericHandlerType = typeof(IHandlerNotification<>).MakeGenericType(reqType);
             var methodInfo = genericHandlerType.GetMethod("HandleAsync")!;

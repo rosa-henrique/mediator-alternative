@@ -13,7 +13,7 @@ var serviceProvider = services.BuildServiceProvider();
 var mediator = serviceProvider.GetRequiredService<IMediator>();
 
 var request = new CreateUserRequest { Username = "teste", Password = "12345566" };
-var result = await mediator.PublishAsync(request);
+var result = await mediator.SendAsync(request);
 
 Console.WriteLine(result);
 
@@ -37,7 +37,7 @@ public class CreateUserHandlerRequestHandlerRequest(UserRepository accountReposi
         accountRepository.Save();
 
         var notification = new UserCreatedEvent(request.Username);
-        await mediator.SendAsync(notification);
+        await mediator.PublishAsync(notification);
         
         return $"{request.Username} created";
     }
